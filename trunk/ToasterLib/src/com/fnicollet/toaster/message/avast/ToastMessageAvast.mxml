@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ToastMessageBase xmlns="com.fnicollet.toaster.message.*" xmlns:mx="http://www.adobe.com/2006/mxml"
+                  width="211" height="155" borderThickness="3" borderColor="#EFEFEF"
+                  borderStyle="solid" backgroundColor="#32B639" backgroundAlpha=".8"
+                  horizontalAlign="center" paddingTop="5">
+
+  <mx:Script>
+    <![CDATA[
+      import mx.controls.Alert;
+      [Bindable]
+      public var sampleCaption:String = "A new avast! version is available online.\r\rClick here to install it...";
+
+      private function onTextRollOver():void {
+        message.setStyle("textDecoration", "underline");
+      }
+
+      private function onTextRollOut():void {
+        message.setStyle("textDecoration", "none");
+      }
+
+      private function onClick():void {
+        Alert.show("Click Update...");
+        close();
+      }
+    ]]>
+  </mx:Script>
+  <mx:Label id="title" fontWeight="bold" fontSize="16" x="80" y="15" text="avast! Information"
+            fontFamily="Arial" color="white"/>
+  <mx:HRule width="80%" strokeColor="white" strokeWidth="2"/>
+  <mx:Text id="message" x="80" y="30" fontSize="13" fontFamily="Arial" text="{sampleCaption}"
+           width="160" selectable="false" color="white" textAlign="center"
+           rollOver="onTextRollOver()" rollOut="onTextRollOut()" useHandCursor="true"
+           buttonMode="true" mouseChildren="false" click="onClick();"/>
+
+</ToastMessageBase>

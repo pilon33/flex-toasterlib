@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<componentPackage>
+    <component id="Toaster" class="com.fnicollet.toaster.Toaster"/>
+    <component id="ToasterContainerBase" class="com.fnicollet.toaster.container.ToastContainerBase"/>
+</componentPackage>
