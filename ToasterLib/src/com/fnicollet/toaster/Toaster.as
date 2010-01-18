@@ -54,6 +54,10 @@ package com.fnicollet.toaster {
 
     // PUBLIC STATIC METHODS
     public static function toast(message:IToastMessage, position:String = ToasterPosition.BOTTOM_RIGHT):void {
+      if (!instance) {
+        trace("Toaster.as::toast:Impossible de Toaster, le Toaster n'est pas instancié");
+        return;
+      }
       if (globalPosition) {
         position = globalPosition;
       }
