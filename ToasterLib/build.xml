@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="ASDoc build" default="createdocs">
+
+    <property name="asdoc.dir" location="C:\Program Files (x86)\Adobe\Flex Builder 3\sdks\3.2.0\bin"/>
+
+    <target name="createdocs">
+        <exec executable="${asdoc.dir}/asdoc.exe" failonerror="true">
+            <arg line="-source-path 'src/'"/>
+            <arg line="-doc-sources 'src/'"/>
+            <arg line="-main-title 'ToasterLib, an easy way to display notifications'"/>
+            <arg line="-window-title 'ToasterLib'"/>
+            <arg line="-output 'docs'"/>
+        </exec>
+    </target>
+</project>
