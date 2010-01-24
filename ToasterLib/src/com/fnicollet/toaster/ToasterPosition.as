@@ -1,5 +1,8 @@
 package com.fnicollet.toaster {
 
+  /**
+   * Constants to specify the different position you can toast to
+   */
   public class ToasterPosition {
     // center
     public static const CENTER_LEFT:String = "CL";

@@ -11,15 +11,23 @@ package com.fnicollet.toaster {
   import mx.core.UIComponent;
   import mx.events.FlexEvent;
 
+  /**
+   * Main class that will contain multiple containers (one for each corner)
+   */
   public class Toaster extends Canvas {
     //STATIC
     // STATIC PRIVATE
     private static var instance:Toaster = null;
     // STATIC PUBLIC
-    // Overrides position for any call
+    /**
+     *  Overrides position for any call
+     */
     public static var globalPosition:String = null;
-
     private var _toastContainerParent:UIComponent = null;
+
+    /**
+     * Specifies a custom parent for the toasts (not the Application)
+     */
 
     public function get toastContainerParent():UIComponent {
       return _toastContainerParent;
@@ -28,7 +36,19 @@ package com.fnicollet.toaster {
     public function set toastContainerParent(value:UIComponent):void {
       _toastContainerParent = value;
     }
+    private var _useLocalPosition:Boolean = false;
 
+    /**
+     * Tells the container wether to use a global positionning or a local one
+     */
+
+    public function get useLocalPosition():Boolean {
+      return _useLocalPosition;
+    }
+
+    public function set useLocalPosition(value:Boolean):void {
+      _useLocalPosition = value;
+    }
     // PRIVATE
     private var _containers:Array = [];
 
@@ -55,7 +75,7 @@ package com.fnicollet.toaster {
     // PUBLIC STATIC METHODS
     public static function toast(message:IToastMessage, position:String = ToasterPosition.BOTTOM_RIGHT):void {
       if (!instance) {
-        trace("Toaster.as::toast:Impossible de Toaster, le Toaster n'est pas instancié");
+        trace("Toaster.as::toast:Can't find a Toaster, the Toaster component ain't instanciated");
         return;
       }
       if (globalPosition) {
@@ -71,6 +91,7 @@ package com.fnicollet.toaster {
         // container wasn't defined in MXML, we create a basic one
         container = new ToastContainerBase;
         container.position = position;
+        container.useLocalPosition = instance.useLocalPosition;
         instance._containers.push(container);
       }
       var instanceChildren:Array = instance.getChildren();
@@ -96,6 +117,7 @@ package com.fnicollet.toaster {
         // container wasn't defined in MXML, we create a basic one
         container = new ToastContainerBase;
         container.position = position;
+        container.useLocalPosition = useLocalPosition;
         _containers.push(container);
       }
       var instanceChildren:Array = getChildren();
