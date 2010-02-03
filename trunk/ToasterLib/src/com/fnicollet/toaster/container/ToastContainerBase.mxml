@@ -5,6 +5,7 @@
            verticalScrollPolicy="off" width="100%" height="100%">
   <mx:Metadata>
   [Event(name="onToastAdded", type="com.fnicollet.toaster.event.ToastEvent")]
+  [Event(name="onToastRemoved", type="com.fnicollet.toaster.event.ToastEvent")]
 </mx:Metadata>
   <mx:Script>
     <![CDATA[
@@ -82,6 +83,10 @@
        *  effects given to the toastmessages
        */
       private var _effectDescriptor:IToasterEffectDescriptor = new ToasterEffectDescriptorBase;
+
+      public function set effectDescriptor(value:IToasterEffectDescriptor):void {
+        _effectDescriptor = value;
+      }
       /**
        *  countdown used by every message
        */
