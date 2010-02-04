@@ -2,7 +2,7 @@
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
            implements="com.fnicollet.toaster.container.IToastContainer"
            creationComplete="onCreationComplete()" horizontalScrollPolicy="off"
-           verticalScrollPolicy="off" width="100%" height="100%">
+           verticalScrollPolicy="off" height="100%">
   <mx:Metadata>
   [Event(name="onToastAdded", type="com.fnicollet.toaster.event.ToastEvent")]
   [Event(name="onToastRemoved", type="com.fnicollet.toaster.event.ToastEvent")]
@@ -358,7 +358,71 @@
       }
 
       private function onParentResize(event:ResizeEvent):void {
+        var target:UIComponent = event.target as UIComponent;
+        if (!target) {
+          return;
+        }
+        var wDiff:Number = event.oldWidth - target.width;
+        var hDiff:Number = event.oldHeight - target.height;
+        // calculate X Offset depending on the position
+        var containerXOffset:Number = 0;
+        switch (position) {
+          case ToasterPosition.BOTTOM_RIGHT:
+          case ToasterPosition.TOP_RIGHT:
+          case ToasterPosition.CENTER_RIGHT:
+            containerXOffset = wDiff;
+            break;
+          case ToasterPosition.BOTTOM_CENTER:
+          case ToasterPosition.CENTER:
+          case ToasterPosition.TOP_CENTER:
+            containerXOffset = wDiff / 2;
+            break;
+        }
+        if (containerXOffset != 0) {
+          x -= containerXOffset;
+        }
+        // calculate Y Offset depending on the position
+        var containerYOffset:Number = 0;
+        switch (position) {
+          case ToasterPosition.BOTTOM_RIGHT:
+          case ToasterPosition.BOTTOM_LEFT:
+          case ToasterPosition.BOTTOM_CENTER:
+            //containerYOffset = hDiff;
+            break;
+          case ToasterPosition.CENTER:
+          case ToasterPosition.CENTER_LEFT:
+          case ToasterPosition.CENTER_RIGHT:
+            containerYOffset = hDiff / 2;
+            break;
+        }
+        if (containerYOffset != 0) {
+          y -= containerYOffset;
+        }
+        // setting correct width
+        var maxMessageWidth:Number = Number.POSITIVE_INFINITY;
+        var changeWidth:Boolean = false;
+        for each (var toastMessage:ToastMessageBase in _messages) {
+          switch (position) {
+            case ToasterPosition.BOTTOM_RIGHT:
+            case ToasterPosition.BOTTOM_LEFT:
+            case ToasterPosition.BOTTOM_CENTER:
+              toastMessage.y -= hDiff;
+              break;
 
+          }
+          if (toastMessage.width < maxWidth) {
+            maxMessageWidth = toastMessage.width;
+            changeWidth = true;
+          }
+        }
+        // mini-hack for the CENTER_RIGHT position
+        if (position == ToasterPosition.CENTER_RIGHT) {
+          changeWidth = false;
+        }
+        // set the container width to the maximum width of the messages
+        if (changeWidth) {
+          width = maxMessageWidth;
+        }
       }
     ]]>
   </mx:Script>
