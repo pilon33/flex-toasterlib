@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+           implements="com.fnicollet.toaster.container.IToastContainer"
+           creationComplete="onCreationComplete()" horizontalScrollPolicy="off"
+           verticalScrollPolicy="off" height="100%">
+  <mx:Metadata>
+  [Event(name="onToastAdded", type="com.fnicollet.toaster.event.ToastEvent")]
+  [Event(name="onToastRemoved", type="com.fnicollet.toaster.event.ToastEvent")]
+</mx:Metadata>
+  <mx:Script>
+    <![CDATA[
+      import mx.events.ResizeEvent;
+      import mx.core.UIComponent;
+      import mx.core.Application;
+      import com.fnicollet.toaster.ToasterPosition;
+      import mx.events.EffectEvent;
+      import mx.effects.Effect;
+      import com.fnicollet.toaster.effect.ToasterEffectDescriptorBase;
+      import com.fnicollet.toaster.effect.IToasterEffectDescriptor;
+      import com.fnicollet.toaster.event.ToastEvent;
+      import com.fnicollet.toaster.message.ToastMessageBase;
+
+      public static const LIFE_TICK:String = "LifeTick";
+      /**
+       *  position on the screen
+       */
+      private var _position:String = null;
+
+      public function get position():String {
+        return _position;
+      }
+
+      public function set position(value:String):void {
+        _position = value;
+      }
+      /**
+       *  affected by rollOver/rollOut ?
+       */
+      private var _lockOnRollOver:Boolean = true;
+
+      public function get lockOnRollOver():Boolean {
+        return _lockOnRollOver;
+      }
+
+      public function set lockOnRollOver(value:Boolean):void {
+        _lockOnRollOver = value;
+      }
+      /**
+       * Parent component for coordinate calculation
+       */
+      private var _toastContainerParent:UIComponent = Application.application as UIComponent;
+
+      public function get toastContainerParent():UIComponent {
+        return _toastContainerParent;
+      }
+
+      public function set toastContainerParent(value:UIComponent):void {
+        if (value != _toastContainerParent) {
+          if (_toastContainerParent) {
+            removeResizeListeners(_toastContainerParent);
+          }
+          _toastContainerParent = value;
+          addResizeListeners(value);
+        }
+      }
+      /**
+       * Tells the container wether to use a global positionning or a local one
+       */
+      private var _useLocalPosition:Boolean = false;
+
+      public function get useLocalPosition():Boolean {
+        return _useLocalPosition;
+      }
+
+      public function set useLocalPosition(value:Boolean):void {
+        _useLocalPosition = value;
+      }
+      /**
+       *  list of toastMessages
+       */
+      private var _messages:Array /* of ToastMessageBase */ = [];
+      /**
+       *  effects given to the toastmessages
+       */
+      private var _effectDescriptor:IToasterEffectDescriptor = new ToasterEffectDescriptorBase;
+
+      public function set effectDescriptor(value:IToasterEffectDescriptor):void {
+        _effectDescriptor = value;
+      }
+      /**
+       *  countdown used by every message
+       */
+      private var _lifeTimer:Timer = new Timer(1000);
+
+      private function onCreationComplete():void {
+        _lifeTimer.addEventListener(TimerEvent.TIMER, addTick);
+        _lifeTimer.start();
+        addEventListener(Event.ACTIVATE, resumeExpiration);
+        addEventListener(Event.DEACTIVATE, pauseExpiration);
+      }
+
+      ////////////////////////////////////////////////////////////////////////////
+      // LIFE TIMER
+      /**
+       * Increment the expiration timer
+       */
+      private function addTick(event:Event):void {
+        var tickEvent:Event = new Event(LIFE_TICK);
+        dispatchEvent(tickEvent);
+      }
+
+      /**
+       * Stop the timer when the user is away
+       */
+      public function pauseExpiration(event:Event = null):void {
+        _lifeTimer.stop();
+      }
+
+      /**
+       * Start the timer when the user returns, reset the expiration of
+       * existing messages so the user has a chance to read them.
+       */
+      public function resumeExpiration(event:Event = null):void {
+        _lifeTimer.start();
+      }
+
+      ////////////////////////////////////////////////////////////////////////////
+      /**
+       *  Add a toast message
+       */
+      public function addToastMessage(toastMessage:ToastMessageBase):void {
+        if (_messages.indexOf(toastMessage) != -1) {
+          trace("ToastMessage aleady added to the container");
+          return;
+        }
+        // add to the display list
+        addChildAt(toastMessage, 0);
+        // keep it in local memory
+        _messages.push(toastMessage);
+        // setting the parent reference on the message
+        toastMessage.container = this;
+        // mark it
+        toastMessage.markedForAddition = true;
+        // play the associated effect
+        var addedEffect:Effect = _effectDescriptor.getAddedEffect(toastMessage);
+        addedEffect.addEventListener(EffectEvent.EFFECT_END, onAddedEffectEnd);
+        addedEffect.play();
+        // inform everyone
+        dispatchEvent(new ToastEvent(ToastEvent.ON_TOAST_ADDED));
+        // move the message to the top of the stack
+        moveToStackTop(toastMessage);
+      }
+
+      private function onAddedEffectEnd(event:EffectEvent):void {
+        (event.effectInstance as IEventDispatcher).removeEventListener(EffectEvent.EFFECT_END, onAddedEffectEnd);
+        var toastMessageTarget:ToastMessageBase = event.effectInstance.target as ToastMessageBase
+        toastMessageTarget.markedForAddition = false;
+      }
+
+      ////////////////////////////////////////////////////////////////////////////
+      /**
+       * Move a toast message
+       */
+      private function moveToStackTop(toastMessage:ToastMessageBase):void {
+        var globalPosition:Point = _useLocalPosition ? _toastContainerParent.localToGlobal(new Point) : new Point;
+        var totalHeightValue:int = getTotalToastHeightValue(toastMessage);
+        var numToast:int = _messages.length;
+        var moveFromPoint:Point = new Point;
+        var moveToPoint:Point = new Point;
+        // to / from Point for BOTTOM and TOP
+        switch (position) {
+          case ToasterPosition.BOTTOM_CENTER:
+          case ToasterPosition.BOTTOM_LEFT:
+          case ToasterPosition.BOTTOM_RIGHT:
+            moveFromPoint.y = globalPosition.y + _toastContainerParent.height;
+            moveToPoint.y = globalPosition.y + _toastContainerParent.height - totalHeightValue - toastMessage.height;
+            break;
+          case ToasterPosition.TOP_CENTER:
+          case ToasterPosition.TOP_LEFT:
+          case ToasterPosition.TOP_RIGHT:
+            moveFromPoint.y = globalPosition.y + totalHeightValue - toastMessage.height;
+            moveToPoint.y = globalPosition.y + totalHeightValue;
+            break;
+          case ToasterPosition.CENTER:
+          case ToasterPosition.CENTER_LEFT:
+          case ToasterPosition.CENTER_RIGHT:
+            y = globalPosition.y + (_toastContainerParent.height - toastMessage.height) / 2;
+            break;
+        }
+        // x position
+        switch (position) {
+          case ToasterPosition.CENTER:
+          case ToasterPosition.BOTTOM_CENTER:
+          case ToasterPosition.TOP_CENTER:
+            x = globalPosition.x + (_toastContainerParent.width - toastMessage.width) / 2;
+            break;
+          case ToasterPosition.BOTTOM_LEFT:
+          case ToasterPosition.TOP_LEFT:
+            x = globalPosition.x;
+            break;
+          case ToasterPosition.BOTTOM_RIGHT:
+          case ToasterPosition.TOP_RIGHT:
+            x = globalPosition.x + _toastContainerParent.width - toastMessage.width;
+            break;
+        }
+        // center positions
+        switch (position) {
+          case ToasterPosition.CENTER_LEFT:
+            moveFromPoint.x = globalPosition.x - toastMessage.width;
+            moveToPoint.x = globalPosition.x;
+            break;
+          case ToasterPosition.CENTER_RIGHT:
+            moveFromPoint.x = globalPosition.x + _toastContainerParent.width;
+            moveToPoint.x = globalPosition.x + _toastContainerParent.width - toastMessage.width;
+            break;
+        }
+        var moveEffect:Effect = _effectDescriptor.getMoveToStackTopEffect(toastMessage, moveFromPoint, moveToPoint);
+        moveEffect.play();
+      }
+
+      /**
+       * get the highest y value so far (top of the stack)
+       */
+      public function getTotalToastHeightValue(toastMessage:ToastMessageBase = null):int {
+        var max:Number = 0;
+        for each (var toastMessageMemory:ToastMessageBase in _messages) {
+          if (toastMessageMemory.markedForDeletion) {
+            continue;
+          }
+          max += toastMessageMemory.height;
+        }
+        if (toastMessage) {
+          max -= toastMessage.height;
+        }
+        return max;
+      }
+
+      /////////////////////////////////////////////////////////////////////////////////
+      /**
+       * Close a toast message
+       */
+      public function closeToastMessage(toastMessage:ToastMessageBase):void {
+        var idx:int = _messages.indexOf(toastMessage);
+        if (idx == -1) {
+          trace("Impossible to close the toast message: not referenced by the container");
+          return;
+        }
+        var moveToPoint:Point = new Point;
+        switch (position) {
+          case ToasterPosition.BOTTOM_CENTER:
+          case ToasterPosition.BOTTOM_LEFT:
+          case ToasterPosition.BOTTOM_RIGHT:
+            moveToPoint.y = toastMessage.y + toastMessage.height;
+            break;
+          case ToasterPosition.TOP_CENTER:
+          case ToasterPosition.TOP_LEFT:
+          case ToasterPosition.TOP_RIGHT:
+            moveToPoint.y = toastMessage.y - toastMessage.height;
+            break;
+          case ToasterPosition.CENTER_LEFT:
+            moveToPoint.x = toastMessage.x - toastMessage.width;
+            break;
+          case ToasterPosition.CENTER_RIGHT:
+            moveToPoint.x = toastMessage.x + toastMessage.width;
+            break;
+        }
+        var removeEffect:Effect = _effectDescriptor.getRemovedEffect(toastMessage, moveToPoint);
+        toastMessage.markedForDeletion = true;
+        removeEffect.addEventListener(EffectEvent.EFFECT_END, onCloseEffectEnd);
+        removeEffect.play();
+
+      }
+
+      /**
+       *  called at the end of the effect
+       */
+      private function onCloseEffectEnd(event:EffectEvent):void {
+        (event.effectInstance as IEventDispatcher).removeEventListener(EffectEvent.EFFECT_END, onCloseEffectEnd);
+        var toastMessageTarget:ToastMessageBase = event.effectInstance.target as ToastMessageBase
+        var idx:int = _messages.indexOf(toastMessageTarget);
+        if (idx == -1) {
+          trace("Impossible to close the toast message: not referenced by the container");
+          return;
+        }
+        var toastMessageHeight:int = toastMessageTarget.height;
+        dispatchEvent(new ToastEvent(ToastEvent.ON_TOAST_REMOVED));
+        // move all the rest of the stack
+        moveMessagesToStackBottom();
+        _messages.splice(idx, 1);
+        removeChild(toastMessageTarget);
+      }
+
+      private function getPreviousMessagesHeight(toastMessage:ToastMessageBase):int {
+        var heightUnder:int = 0;
+        for each (var memToastMessage:ToastMessageBase in _messages) {
+          if (memToastMessage == toastMessage) {
+            return heightUnder;
+          }
+          if (memToastMessage.markedForDeletion) {
+            heightUnder += memToastMessage.height;
+          }
+        }
+        return heightUnder;
+      }
+
+      private function getDirectPreviousMessage(toastMessage:ToastMessageBase):ToastMessageBase {
+        var idx:int = _messages.indexOf(toastMessage);
+        if (idx == -1 || idx == 0) {
+          return null;
+        }
+        var prevMsg:ToastMessageBase = _messages[idx - 1] as ToastMessageBase;
+        if (prevMsg && prevMsg.markedForDeletion) {
+          return getDirectPreviousMessage(prevMsg);
+        }
+        return prevMsg;
+      }
+
+      ////////////////////////////////////////////////////////////////////////////////
+      /**
+       * RE ORDER THE MESSAGES
+       */
+      private function moveMessagesToStackBottom():void {
+
+        for each (var toastMessage:ToastMessageBase in _messages) {
+          if (toastMessage.markedForAddition) {
+            continue;
+          }
+          var heightDiff:int = getPreviousMessagesHeight(toastMessage);
+          heightDiff = heightDiff > 0 ? heightDiff : -heightDiff;
+          var moveToPoint:Point = new Point;
+          switch (position) {
+            case ToasterPosition.BOTTOM_CENTER:
+            case ToasterPosition.BOTTOM_LEFT:
+            case ToasterPosition.BOTTOM_RIGHT:
+              moveToPoint.y = toastMessage.y + heightDiff;
+              break;
+            case ToasterPosition.TOP_CENTER:
+            case ToasterPosition.TOP_LEFT:
+            case ToasterPosition.TOP_RIGHT:
+              moveToPoint.y = toastMessage.y - heightDiff;
+              break;
+          }
+          var moveEffect:Effect = _effectDescriptor.getMoveToStackBottomEffect(toastMessage, moveToPoint);
+          moveEffect.play();
+        }
+      }
+
+      ////////////////////////////////////////////////////////////////////////////////
+      /**
+       * PARENT RESIZING
+       */
+      private function addResizeListeners(uiComp:UIComponent):void {
+        uiComp.addEventListener(ResizeEvent.RESIZE, onParentResize);
+      }
+
+      private function removeResizeListeners(uiComp:UIComponent):void {
+        uiComp.removeEventListener(ResizeEvent.RESIZE, onParentResize);
+      }
+
+      private function onParentResize(event:ResizeEvent):void {
+        var target:UIComponent = event.target as UIComponent;
+        if (!target) {
+          return;
+        }
+        var wDiff:Number = event.oldWidth - target.width;
+        var hDiff:Number = event.oldHeight - target.height;
+        // calculate X Offset depending on the position
+        var containerXOffset:Number = 0;
+        switch (position) {
+          case ToasterPosition.BOTTOM_RIGHT:
+          case ToasterPosition.TOP_RIGHT:
+          case ToasterPosition.CENTER_RIGHT:
+            containerXOffset = wDiff;
+            break;
+          case ToasterPosition.BOTTOM_CENTER:
+          case ToasterPosition.CENTER:
+          case ToasterPosition.TOP_CENTER:
+            containerXOffset = wDiff / 2;
+            break;
+        }
+        if (containerXOffset != 0) {
+          x -= containerXOffset;
+        }
+        // calculate Y Offset depending on the position
+        var containerYOffset:Number = 0;
+        switch (position) {
+          case ToasterPosition.BOTTOM_RIGHT:
+          case ToasterPosition.BOTTOM_LEFT:
+          case ToasterPosition.BOTTOM_CENTER:
+            //containerYOffset = hDiff;
+            break;
+          case ToasterPosition.CENTER:
+          case ToasterPosition.CENTER_LEFT:
+          case ToasterPosition.CENTER_RIGHT:
+            containerYOffset = hDiff / 2;
+            break;
+        }
+        if (containerYOffset != 0) {
+          y -= containerYOffset;
+        }
+        // setting correct width
+        var maxMessageWidth:Number = Number.POSITIVE_INFINITY;
+        var changeWidth:Boolean = false;
+        for each (var toastMessage:ToastMessageBase in _messages) {
+          switch (position) {
+            case ToasterPosition.BOTTOM_RIGHT:
+            case ToasterPosition.BOTTOM_LEFT:
+            case ToasterPosition.BOTTOM_CENTER:
+              toastMessage.y -= hDiff;
+              break;
+
+          }
+          if (toastMessage.width < maxWidth) {
+            maxMessageWidth = toastMessage.width;
+            changeWidth = true;
+          }
+        }
+        // mini-hack for the CENTER_RIGHT position
+        if (position == ToasterPosition.CENTER_RIGHT) {
+          changeWidth = false;
+        }
+        // set the container width to the maximum width of the messages
+        if (changeWidth) {
+          width = maxMessageWidth;
+        }
+      }
+    ]]>
+  </mx:Script>
+</mx:Canvas>
