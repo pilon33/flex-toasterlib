@@ -19,17 +19,17 @@
       import com.fnicollet.toaster.effect.IToasterEffectDescriptor;
       import com.fnicollet.toaster.event.ToastEvent;
       import com.fnicollet.toaster.message.ToastMessageBase;
-
+      
       public static const LIFE_TICK:String = "LifeTick";
       /**
        *  position on the screen
        */
       private var _position:String = null;
-
+      
       public function get position():String {
         return _position;
       }
-
+      
       public function set position(value:String):void {
         _position = value;
       }
@@ -37,11 +37,11 @@
        *  affected by rollOver/rollOut ?
        */
       private var _lockOnRollOver:Boolean = true;
-
+      
       public function get lockOnRollOver():Boolean {
         return _lockOnRollOver;
       }
-
+      
       public function set lockOnRollOver(value:Boolean):void {
         _lockOnRollOver = value;
       }
@@ -49,11 +49,11 @@
        * Parent component for coordinate calculation
        */
       private var _toastContainerParent:UIComponent = Application.application as UIComponent;
-
+      
       public function get toastContainerParent():UIComponent {
         return _toastContainerParent;
       }
-
+      
       public function set toastContainerParent(value:UIComponent):void {
         if (value != _toastContainerParent) {
           if (_toastContainerParent) {
@@ -67,11 +67,11 @@
        * Tells the container wether to use a global positionning or a local one
        */
       private var _useLocalPosition:Boolean = false;
-
+      
       public function get useLocalPosition():Boolean {
         return _useLocalPosition;
       }
-
+      
       public function set useLocalPosition(value:Boolean):void {
         _useLocalPosition = value;
       }
@@ -83,7 +83,7 @@
        *  effects given to the toastmessages
        */
       private var _effectDescriptor:IToasterEffectDescriptor = new ToasterEffectDescriptorBase;
-
+      
       public function set effectDescriptor(value:IToasterEffectDescriptor):void {
         _effectDescriptor = value;
       }
@@ -91,14 +91,14 @@
        *  countdown used by every message
        */
       private var _lifeTimer:Timer = new Timer(1000);
-
+      
       private function onCreationComplete():void {
         _lifeTimer.addEventListener(TimerEvent.TIMER, addTick);
         _lifeTimer.start();
         addEventListener(Event.ACTIVATE, resumeExpiration);
         addEventListener(Event.DEACTIVATE, pauseExpiration);
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////
       // LIFE TIMER
       /**
@@ -108,14 +108,14 @@
         var tickEvent:Event = new Event(LIFE_TICK);
         dispatchEvent(tickEvent);
       }
-
+      
       /**
        * Stop the timer when the user is away
        */
       public function pauseExpiration(event:Event = null):void {
         _lifeTimer.stop();
       }
-
+      
       /**
        * Start the timer when the user returns, reset the expiration of
        * existing messages so the user has a chance to read them.
@@ -123,7 +123,7 @@
       public function resumeExpiration(event:Event = null):void {
         _lifeTimer.start();
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////
       /**
        *  Add a toast message
@@ -150,19 +150,20 @@
         // move the message to the top of the stack
         moveToStackTop(toastMessage);
       }
-
+      
       private function onAddedEffectEnd(event:EffectEvent):void {
         (event.effectInstance as IEventDispatcher).removeEventListener(EffectEvent.EFFECT_END, onAddedEffectEnd);
         var toastMessageTarget:ToastMessageBase = event.effectInstance.target as ToastMessageBase
         toastMessageTarget.markedForAddition = false;
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////
       /**
        * Move a toast message
        */
       private function moveToStackTop(toastMessage:ToastMessageBase):void {
-        var globalPosition:Point = _useLocalPosition ? _toastContainerParent.localToGlobal(new Point) : new Point;
+        var globalPosition:Point = _useLocalPosition ? _toastContainerParent.localToGlobal(new Point) :
+          new Point;
         var totalHeightValue:int = getTotalToastHeightValue(toastMessage);
         var numToast:int = _messages.length;
         var moveFromPoint:Point = new Point;
@@ -214,10 +215,11 @@
             moveToPoint.x = globalPosition.x + _toastContainerParent.width - toastMessage.width;
             break;
         }
-        var moveEffect:Effect = _effectDescriptor.getMoveToStackTopEffect(toastMessage, moveFromPoint, moveToPoint);
+        var moveEffect:Effect = _effectDescriptor.getMoveToStackTopEffect(toastMessage, moveFromPoint,
+          moveToPoint);
         moveEffect.play();
       }
-
+      
       /**
        * get the highest y value so far (top of the stack)
        */
@@ -234,7 +236,7 @@
         }
         return max;
       }
-
+      
       /////////////////////////////////////////////////////////////////////////////////
       /**
        * Close a toast message
@@ -268,9 +270,9 @@
         toastMessage.markedForDeletion = true;
         removeEffect.addEventListener(EffectEvent.EFFECT_END, onCloseEffectEnd);
         removeEffect.play();
-
+      
       }
-
+      
       /**
        *  called at the end of the effect
        */
@@ -289,7 +291,7 @@
         _messages.splice(idx, 1);
         removeChild(toastMessageTarget);
       }
-
+      
       private function getPreviousMessagesHeight(toastMessage:ToastMessageBase):int {
         var heightUnder:int = 0;
         for each (var memToastMessage:ToastMessageBase in _messages) {
@@ -302,7 +304,18 @@
         }
         return heightUnder;
       }
-
+      
+      private function getCurrentPreviousMessagesHeight(toastMessage:ToastMessageBase):int {
+        var heightUnder:int = 0;
+        for each (var memToastMessage:ToastMessageBase in _messages) {
+          if (memToastMessage == toastMessage) {
+            return heightUnder;
+          }
+          heightUnder += memToastMessage.height;
+        }
+        return heightUnder;
+      }
+      
       private function getDirectPreviousMessage(toastMessage:ToastMessageBase):ToastMessageBase {
         var idx:int = _messages.indexOf(toastMessage);
         if (idx == -1 || idx == 0) {
@@ -314,13 +327,13 @@
         }
         return prevMsg;
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////////
       /**
        * RE ORDER THE MESSAGES
        */
       private function moveMessagesToStackBottom():void {
-
+        
         for each (var toastMessage:ToastMessageBase in _messages) {
           if (toastMessage.markedForAddition) {
             continue;
@@ -344,7 +357,7 @@
           moveEffect.play();
         }
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////////
       /**
        * PARENT RESIZING
@@ -352,11 +365,11 @@
       private function addResizeListeners(uiComp:UIComponent):void {
         uiComp.addEventListener(ResizeEvent.RESIZE, onParentResize);
       }
-
+      
       private function removeResizeListeners(uiComp:UIComponent):void {
         uiComp.removeEventListener(ResizeEvent.RESIZE, onParentResize);
       }
-
+      
       private function onParentResize(event:ResizeEvent):void {
         var target:UIComponent = event.target as UIComponent;
         if (!target) {
@@ -379,7 +392,11 @@
             break;
         }
         if (containerXOffset != 0) {
+          //if (position == ToasterPosition.BOTTOM_RIGHT) {
+          // rien
+          //} else {
           x -= containerXOffset;
+            //}
         }
         // calculate Y Offset depending on the position
         var containerYOffset:Number = 0;
@@ -401,14 +418,21 @@
         // setting correct width
         var maxMessageWidth:Number = Number.POSITIVE_INFINITY;
         var changeWidth:Boolean = false;
+        var globalPosition:Point = _useLocalPosition ? _toastContainerParent.localToGlobal(new Point) :
+          new Point;
         for each (var toastMessage:ToastMessageBase in _messages) {
           switch (position) {
             case ToasterPosition.BOTTOM_RIGHT:
+              x = globalPosition.x + _toastContainerParent.width - toastMessage.width;
+              var totalHeightValue:int = getTotalToastHeightValue(toastMessage);
+              toastMessage.y = globalPosition.y + _toastContainerParent.height - toastMessage.height -
+                getCurrentPreviousMessagesHeight(toastMessage);
+              break;
             case ToasterPosition.BOTTOM_LEFT:
             case ToasterPosition.BOTTOM_CENTER:
               toastMessage.y -= hDiff;
               break;
-
+          
           }
           if (toastMessage.width < maxWidth) {
             maxMessageWidth = toastMessage.width;
