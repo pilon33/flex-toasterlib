@@ -174,7 +174,8 @@
           case ToasterPosition.BOTTOM_LEFT:
           case ToasterPosition.BOTTOM_RIGHT:
             moveFromPoint.y = globalPosition.y + _toastContainerParent.height;
-            moveToPoint.y = globalPosition.y + _toastContainerParent.height - totalHeightValue - toastMessage.height;
+            moveToPoint.y = globalPosition.y + _toastContainerParent.height - totalHeightValue - toastMessage.
+              height;
             break;
           case ToasterPosition.TOP_CENTER:
           case ToasterPosition.TOP_LEFT:
@@ -225,14 +226,21 @@
        */
       public function getTotalToastHeightValue(toastMessage:ToastMessageBase = null):int {
         var max:Number = 0;
+        var nbItems:int = 0;
+        var hasElementMarkedForDeletion:Boolean = false;
         for each (var toastMessageMemory:ToastMessageBase in _messages) {
           if (toastMessageMemory.markedForDeletion) {
+            hasElementMarkedForDeletion = true;
             continue;
           }
           max += toastMessageMemory.height;
+          nbItems++;
         }
         if (toastMessage) {
-          max -= toastMessage.height;
+          if (hasElementMarkedForDeletion && nbItems == 1) {
+          } else {
+            max -= toastMessage.height;
+          }
         }
         return max;
       }
