@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:SkinnableContainer xmlns:mx="library://ns.adobe.com/flex/mx"
-xmlns:fx="http://ns.adobe.com/mxml/2009" 
-xmlns:s="library://ns.adobe.com/flex/spark"
-           implements="com.fnicollet.toaster.container.IToastContainer"
-           creationComplete="onCreationComplete()" height="100%">
+                      xmlns:fx="http://ns.adobe.com/mxml/2009" 
+                      xmlns:s="library://ns.adobe.com/flex/spark"
+                      implements="com.fnicollet.toaster.container.IToastContainer"
+                      creationComplete="onCreationComplete()" height="100%">
   <fx:Metadata>
-  [Event(name="onToastAdded", type="com.fnicollet.toaster.event.ToastEvent")]
-  [Event(name="onToastRemoved", type="com.fnicollet.toaster.event.ToastEvent")]
-</fx:Metadata>
+    [Event(name="onToastAdded", type="com.fnicollet.toaster.event.ToastEvent")]
+    [Event(name="onToastRemoved", type="com.fnicollet.toaster.event.ToastEvent")]
+  </fx:Metadata>
   <fx:Script>
     <![CDATA[
       import com.fnicollet.toaster.ToasterPosition;
@@ -26,17 +26,17 @@ xmlns:s="library://ns.adobe.com/flex/spark"
       import mx.events.EffectEvent;
       import mx.events.FlexEvent;
       import mx.events.ResizeEvent;
-
+      
       public static const LIFE_TICK:String = "LifeTick";
       /**
        *  position on the screen
        */
       private var _position:String = null;
-
+      
       public function get position():String {
         return _position;
       }
-
+      
       public function set position(value:String):void {
         _position = value;
       }
@@ -44,11 +44,11 @@ xmlns:s="library://ns.adobe.com/flex/spark"
        *  affected by rollOver/rollOut ?
        */
       private var _lockOnRollOver:Boolean = true;
-
+      
       public function get lockOnRollOver():Boolean {
         return _lockOnRollOver;
       }
-
+      
       public function set lockOnRollOver(value:Boolean):void {
         _lockOnRollOver = value;
       }
@@ -56,11 +56,11 @@ xmlns:s="library://ns.adobe.com/flex/spark"
        * Parent component for coordinate calculation
        */
       private var _toastContainerParent:UIComponent = FlexGlobals.topLevelApplication as UIComponent;
-
+      
       public function get toastContainerParent():UIComponent {
         return _toastContainerParent;
       }
-
+      
       public function set toastContainerParent(value:UIComponent):void {
         if (value != _toastContainerParent) {
           if (_toastContainerParent) {
@@ -74,11 +74,11 @@ xmlns:s="library://ns.adobe.com/flex/spark"
        * Tells the container wether to use a global positionning or a local one
        */
       private var _useLocalPosition:Boolean = false;
-
+      
       public function get useLocalPosition():Boolean {
         return _useLocalPosition;
       }
-
+      
       public function set useLocalPosition(value:Boolean):void {
         _useLocalPosition = value;
       }
@@ -90,7 +90,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
        *  effects given to the toastmessages
        */
       private var _effectDescriptor:IToasterEffectDescriptor = new ToasterEffectDescriptorBase;
-
+      
       public function set effectDescriptor(value:IToasterEffectDescriptor):void {
         _effectDescriptor = value;
       }
@@ -98,14 +98,14 @@ xmlns:s="library://ns.adobe.com/flex/spark"
        *  countdown used by every message
        */
       private var _lifeTimer:Timer = new Timer(1000);
-
+      
       private function onCreationComplete():void {
         _lifeTimer.addEventListener(TimerEvent.TIMER, addTick);
         _lifeTimer.start();
         addEventListener(Event.ACTIVATE, resumeExpiration);
         addEventListener(Event.DEACTIVATE, pauseExpiration);
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////
       // LIFE TIMER
       /**
@@ -115,14 +115,14 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         var tickEvent:Event = new Event(LIFE_TICK);
         dispatchEvent(tickEvent);
       }
-
+      
       /**
        * Stop the timer when the user is away
        */
       public function pauseExpiration(event:Event = null):void {
         _lifeTimer.stop();
       }
-
+      
       /**
        * Start the timer when the user returns, reset the expiration of
        * existing messages so the user has a chance to read them.
@@ -130,7 +130,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
       public function resumeExpiration(event:Event = null):void {
         _lifeTimer.start();
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////
       /**
        *  Add a toast message
@@ -157,13 +157,13 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         // move the message to the top of the stack
         moveToStackTop(toastMessage);
       }
-
+      
       private function onAddedEffectEnd(event:EffectEvent):void {
         (event.effectInstance as IEventDispatcher).removeEventListener(EffectEvent.EFFECT_END, onAddedEffectEnd);
         var toastMessageTarget:ToastMessageBase = event.effectInstance.target as ToastMessageBase
         toastMessageTarget.markedForAddition = false;
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////
       /**
        * Move a toast message
@@ -227,7 +227,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         // that will prevent the toastmessage from being collected
         toastMessage.addEventListener(FlexEvent.CREATION_COMPLETE, function onToastMessageCreationComplete(e:Event):void{moveEffect.play()});
       }
-
+      
       /**
        * get the highest y value so far (top of the stack)
        */
@@ -251,7 +251,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         }
         return max;
       }
-
+      
       /////////////////////////////////////////////////////////////////////////////////
       /**
        * Close a toast message
@@ -285,9 +285,9 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         toastMessage.markedForDeletion = true;
         removeEffect.addEventListener(EffectEvent.EFFECT_END, onCloseEffectEnd);
         removeEffect.play();
-
+        
       }
-
+      
       /**
        *  called at the end of the effect
        */
@@ -306,7 +306,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         _messages.splice(idx, 1);
         removeElement(toastMessageTarget);
       }
-
+      
       private function getPreviousMessagesHeight(toastMessage:ToastMessageBase):int {
         var heightUnder:int = 0;
         for each (var memToastMessage:ToastMessageBase in _messages) {
@@ -319,7 +319,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         }
         return heightUnder;
       }
-
+      
       private function getCurrentPreviousMessagesHeight(toastMessage:ToastMessageBase):int {
         var heightUnder:int = 0;
         for each (var memToastMessage:ToastMessageBase in _messages) {
@@ -330,7 +330,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         }
         return heightUnder;
       }
-
+      
       private function getDirectPreviousMessage(toastMessage:ToastMessageBase):ToastMessageBase {
         var idx:int = _messages.indexOf(toastMessage);
         if (idx == -1 || idx == 0) {
@@ -342,13 +342,13 @@ xmlns:s="library://ns.adobe.com/flex/spark"
         }
         return prevMsg;
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////////
       /**
        * RE ORDER THE MESSAGES
        */
       private function moveMessagesToStackBottom():void {
-
+        
         for each (var toastMessage:ToastMessageBase in _messages) {
           if (toastMessage.markedForAddition) {
             continue;
@@ -372,7 +372,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
           moveEffect.play();
         }
       }
-
+      
       ////////////////////////////////////////////////////////////////////////////////
       /**
        * PARENT RESIZING
@@ -380,18 +380,18 @@ xmlns:s="library://ns.adobe.com/flex/spark"
       private function addResizeListeners(uiComp:UIComponent):void {
         uiComp.addEventListener(ResizeEvent.RESIZE, onParentResize);
       }
-
+      
       private function removeResizeListeners(uiComp:UIComponent):void {
         uiComp.removeEventListener(ResizeEvent.RESIZE, onParentResize);
       }
-
+      
       private function onParentResize(event:ResizeEvent):void {
         var target:UIComponent = event.target as UIComponent;
         if (!target) {
           return;
         }
         var wDiff:Number = event.oldWidth - target.width;
-        var hDiff:Number = event.oldHeight - target.measuredHeight;
+        var hDiff:Number = event.oldHeight - target.height;
         // calculate X Offset depending on the position
         var containerXOffset:Number = 0;
         switch (position) {
@@ -411,7 +411,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
           // rien
           //} else {
           x -= containerXOffset;
-            //}
+          //}
         }
         // calculate Y Offset depending on the position
         var containerYOffset:Number = 0;
@@ -445,7 +445,7 @@ xmlns:s="library://ns.adobe.com/flex/spark"
             case ToasterPosition.BOTTOM_CENTER:
               toastMessage.y -= hDiff;
               break;
-
+            
           }
           if (toastMessage.width < maxWidth) {
             maxMessageWidth = toastMessage.width;
