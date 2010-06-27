@@ -2,19 +2,22 @@ package com.fnicollet.toaster {
   import com.fnicollet.toaster.container.ToastContainerBase;
   import com.fnicollet.toaster.message.IToastMessage;
   import com.fnicollet.toaster.message.ToastMessageBase;
-
+  
   import flash.events.Event;
   import flash.geom.Point;
   import flash.geom.Rectangle;
-
+  
   import mx.containers.Canvas;
+  import mx.core.IVisualElement;
   import mx.core.UIComponent;
   import mx.events.FlexEvent;
+  
+  import spark.components.SkinnableContainer;
 
   /**
    * Main class that will contain multiple containers (one for each corner)
    */
-  public class Toaster extends Canvas {
+  public class Toaster extends SkinnableContainer {
     //STATIC
     // STATIC PRIVATE
     private static var instance:Toaster = null;
@@ -94,13 +97,20 @@ package com.fnicollet.toaster {
         container.useLocalPosition = instance.useLocalPosition;
         instance._containers.push(container);
       }
-      var instanceChildren:Array = instance.getChildren();
-      if (instanceChildren.indexOf(container) == -1) {
-        // set the global property on the children
-        if (instance._toastContainerParent) {
-          container.toastContainerParent = instance._toastContainerParent;
+      var elementFound:Boolean = false;
+      var nbElements:int =  instance.numElements;
+      for (var i:int = 0; i < nbElements ; i++){
+        var currentElement:IVisualElement =  instance.getElementAt(i);
+        if (currentElement == container){
+          elementFound = true;
+          break;
         }
-        instance.addChild(container);
+      }
+      if (!elementFound){
+        if ( instance._toastContainerParent) {
+          container.toastContainerParent =  instance._toastContainerParent;
+        }
+        instance.addElement(container);
       }
       container.addToastMessage(message as ToastMessageBase);
     }
@@ -120,13 +130,20 @@ package com.fnicollet.toaster {
         container.useLocalPosition = useLocalPosition;
         _containers.push(container);
       }
-      var instanceChildren:Array = getChildren();
-      if (instanceChildren.indexOf(container) == -1) {
-        // set the global property on the children
+      var elementFound:Boolean = false;
+      var nbElements:int = numElements;
+      for (var i:int = 0; i < nbElements ; i++){
+        var currentElement:IVisualElement = getElementAt(i);
+        if (currentElement == container){
+          elementFound = true;
+          break;
+        }
+      }
+      if (!elementFound){
         if (_toastContainerParent) {
           container.toastContainerParent = _toastContainerParent;
         }
-        addChild(container);
+        addElement(container);
       }
       container.addToastMessage(message as ToastMessageBase);
     }
