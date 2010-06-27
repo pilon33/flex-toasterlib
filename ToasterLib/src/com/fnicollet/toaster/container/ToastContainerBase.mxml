@@ -234,10 +234,7 @@
           nbItems++;
         }
         if (toastMessage) {
-          if (hasElementMarkedForDeletion && nbItems == 1) {
-          } else {
-            max -= toastMessage.height;
-          }
+          max -= toastMessage.height;
         }
         return max;
       }
