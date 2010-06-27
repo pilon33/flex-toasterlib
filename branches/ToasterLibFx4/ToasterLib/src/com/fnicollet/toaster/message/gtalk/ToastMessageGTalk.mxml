@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ToastMessageBase xmlns="com.fnicollet.toaster.message.*" xmlns:mx="http://www.adobe.com/2006/mxml"
-                  width="264" height="88" borderThickness="2" borderColor="#7B96C6"
-                  borderStyle="solid" backgroundColor="white">
+<ToastMessageBase xmlns="com.fnicollet.toaster.message.*" 
+                  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+                  xmlns:s="library://ns.adobe.com/flex/spark" 
+                  xmlns:mx="library://ns.adobe.com/flex/mx"
+                  width="264" height="88"
+                  backgroundColor="white">
+  <borderStroke>
+    <mx:SolidColorStroke weight="2" color="0x7B96C6"/>
+  </borderStroke>
 
-  <mx:Script>
+  <fx:Script>
     <![CDATA[
       [Bindable]
       public var sampleCaption:String = "Test de texte sur 2 lignes\ncar trop long";
       [Bindable]
       public var imageSource:String = null;
     ]]>
-  </mx:Script>
-  <mx:Canvas width="100%" height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+  </fx:Script>
     <mx:Button upSkin="@Embed('/com/fnicollet/toaster/skin/gtalk/assets/closeButton.gif')"
                overSkin="@Embed('/com/fnicollet/toaster/skin/gtalk/assets/closeButton.gif')"
                downSkin="@Embed('/com/fnicollet/toaster/skin/gtalk/assets/closeButton.gif')"
                click="close()" useHandCursor="true" buttonMode="true" right="5" top="5"/>
     <mx:Image id="avatar" x="9" y="17" width="64" height="48" source="{imageSource}"/>
-    <mx:Label id="userName" fontWeight="bold" fontSize="12" x="80" y="15" text="Monsieur X"
+    <s:Label id="userName" fontWeight="bold" fontSize="12" x="80" y="15" text="Monsieur X"
               fontFamily="Arial"/>
     <mx:Text id="caption" x="80" y="30" fontSize="12" fontFamily="Arial" text="{sampleCaption}"
              width="160" height="40" selectable="false"/>
-  </mx:Canvas>
 
 </ToastMessageBase>
