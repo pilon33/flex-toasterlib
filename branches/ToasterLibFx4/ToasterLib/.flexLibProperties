@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flexLibProperties version="1">
+<includeClasses>
+<classEntry path="com.fnicollet.toaster.Toaster"/>
+<classEntry path="com.fnicollet.toaster.ToasterPosition"/>
+<classEntry path="com.fnicollet.toaster.container.ToastContainerBase"/>
+<classEntry path="com.fnicollet.toaster.effect.ToasterEffectDescriptorBase"/>
+<classEntry path="com.fnicollet.toaster.event.ToastEvent"/>
+<classEntry path="com.fnicollet.toaster.event.ToasterEvent"/>
+<classEntry path="com.fnicollet.toaster.message.ToastMessageBase"/>
+<classEntry path="com.fnicollet.toaster.message.avast.ToastMessageAvast"/>
+<classEntry path="com.fnicollet.toaster.message.gtalk.ToastMessageGTalk"/>
+<classEntry path="com.fnicollet.toaster.message.ubuntu.ToastMessageUbuntu"/>
+</includeClasses>
+<includeResources>
+<resourceEntry destPath="com/fnicollet/toaster/skin/gtalk/assets/closeButton.gif" sourcePath="com/fnicollet/toaster/skin/gtalk/assets/closeButton.gif"/>
+</includeResources>
+<namespaceManifests>
+<namespaceManifestEntry manifest="META-INF/manifest.xml" namespace="http://www.flex-tutorial.fr/2009"/>
+</namespaceManifests>
+</flexLibProperties>
