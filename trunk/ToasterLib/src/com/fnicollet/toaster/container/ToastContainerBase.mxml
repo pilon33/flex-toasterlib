@@ -172,8 +172,8 @@
           case ToasterPosition.BOTTOM_CENTER:
           case ToasterPosition.BOTTOM_LEFT:
           case ToasterPosition.BOTTOM_RIGHT:
-            moveFromPoint.y = globalPosition.y + _toastContainerParent.measuredHeight;
-            moveToPoint.y = globalPosition.y + _toastContainerParent.measuredHeight - totalHeightValue - toastMessage.measuredHeight;
+            moveFromPoint.y = globalPosition.y + _toastContainerParent.height;
+            moveToPoint.y = globalPosition.y + _toastContainerParent.height - totalHeightValue - toastMessage.height;
             break;
           case ToasterPosition.TOP_CENTER:
           case ToasterPosition.TOP_LEFT:
