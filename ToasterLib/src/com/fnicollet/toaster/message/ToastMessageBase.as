@@ -1,18 +1,21 @@
 package com.fnicollet.toaster.message {
   import com.fnicollet.toaster.container.IToastContainer;
   import com.fnicollet.toaster.container.ToastContainerBase;
-
+  
   import flash.events.Event;
   import flash.events.MouseEvent;
-
+  
   import mx.containers.Box;
+  
+  import spark.components.BorderContainer;
+  import spark.components.SkinnableContainer;
 
   /**
    * This class is a basic container implementation for your toast.
    * It just handles basic tasks (open, delay, close).
    * This is the class you need to extend to create your own messages.
    */
-  public class ToastMessageBase extends Box implements IToastMessage {
+  public class ToastMessageBase extends BorderContainer implements IToastMessage {
     // container
     private var _container:IToastContainer = null;
 
@@ -79,8 +82,6 @@ package com.fnicollet.toaster.message {
     // CONSTRUCTOR
     public function ToastMessageBase() {
       super();
-      setStyle("horizontalScrollPolicy", "off");
-      setStyle(verticalScrollPolicy, "off");
     }
 
     // called every second that the container is considered active

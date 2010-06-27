@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ToastMessageBase xmlns="com.fnicollet.toaster.message.*" xmlns:mx="http://www.adobe.com/2006/mxml"
-                  width="211" height="155" borderThickness="3" borderColor="#EFEFEF"
+<ToastMessageBase xmlns="com.fnicollet.toaster.message.*" 
+                  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+                  xmlns:s="library://ns.adobe.com/flex/spark" 
+                  xmlns:mx="library://ns.adobe.com/flex/mx"
+                  width="211" height="155" borderColor="#EFEFEF"
                   borderStyle="solid" backgroundColor="#32B639" backgroundAlpha=".8"
-                  horizontalAlign="center" paddingTop="5">
-
-  <mx:Script>
+                 >
+  <layout>
+    <s:VerticalLayout paddingTop="5" horizontalAlign="center"/>
+  </layout>
+  <fx:Script>
     <![CDATA[
       import mx.controls.Alert;
       [Bindable]
@@ -23,10 +28,14 @@
         close();
       }
     ]]>
-  </mx:Script>
-  <mx:Label id="title" fontWeight="bold" fontSize="16" x="80" y="15" text="avast! Information"
+  </fx:Script>
+  <s:Label id="title" fontWeight="bold" fontSize="16" x="80" y="15" text="avast! Information"
             fontFamily="Arial" color="white"/>
-  <mx:HRule width="80%" strokeColor="white" strokeWidth="2"/>
+  <s:Line width="80%" >
+    <s:stroke>
+      <mx:SolidColorStroke color="white" weight="2" />
+    </s:stroke>
+  </s:Line>
   <mx:Text id="message" x="80" y="30" fontSize="13" fontFamily="Arial" text="{sampleCaption}"
            width="160" selectable="false" color="white" textAlign="center"
            rollOver="onTextRollOver()" rollOut="onTextRollOut()" useHandCursor="true"

@@ -5,9 +5,11 @@ package com.fnicollet.toaster.effect {
   
   import mx.effects.Blur;
   import mx.effects.Effect;
-  import mx.effects.Fade;
-  import mx.effects.Move;
   import mx.effects.Parallel;
+  
+  import spark.effects.AnimateFilter;
+  import spark.effects.Fade;
+  import spark.effects.Move;
   
   public class ToasterEffectDescriptorBase implements IToasterEffectDescriptor {
     private var _moveDuration:int = 500;
